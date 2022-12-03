@@ -16,6 +16,8 @@ import java.util.Scanner;
  */
 public class FileDuplicateChecker {
     
+    static File selectedDirectory;
+    
     static ArrayList<File> fetchedFiles = new ArrayList<>();
     static ArrayList<File> duplicateFiles = new ArrayList<>();
     
@@ -24,11 +26,16 @@ public class FileDuplicateChecker {
         Scanner in = new Scanner(System.in);
         
         System.out.println("=====File Duplicate Checker v0.01=====");
-        System.out.print(
-                "Enter the directory you'd like to scan for duplicate files: "
-        );
-        String directoryPath = in.nextLine();
-        File selectedDirectory = new File(directoryPath);
+        
+        do {    
+            System.out.print(
+                "Enter the directory you'd like to scan for duplicate files: ");
+            selectedDirectory = new File(in.nextLine());
+            if (!selectedDirectory.isDirectory()) {
+                System.err.println("Entered directory path is NOT valid!");
+            }
+        } while (!selectedDirectory.isDirectory());
+
         System.out.println("Fetching files...");
         scrape(selectedDirectory);
         Collections.sort(fetchedFiles, Collections.reverseOrder());

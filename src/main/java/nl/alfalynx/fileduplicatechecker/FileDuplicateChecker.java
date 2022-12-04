@@ -61,14 +61,6 @@ public class FileDuplicateChecker {
                 try {
                     long check = Files.mismatch(controlFile.toPath(), testFile.toPath());
                     
-                    //int check = Arrays.compare(
-                    //        Files.readAllBytes(controlFile.toPath()),
-                    //        Files.readAllBytes(testFile.toPath())
-                    //);
-                    
-                    //System.out.printf("Comparing files %s and %s\n", 
-                    //        controlFile.getName(), testFile.getName());
-                    
                     // Ensures the program does NOT remove the original file!!
                     if (check == -1L && !controlFile.equals(testFile)) {
                         System.out.printf("Duplicate files detected:\n\t%s\n\t%s\n",
@@ -76,7 +68,7 @@ public class FileDuplicateChecker {
                                 testFile.getAbsolutePath());
                         duplicateFiles.add(testFile);
                     }
-                } catch (Exception e) {
+                } catch (IOException e) {
                     System.err.println(e);
                 }
             }

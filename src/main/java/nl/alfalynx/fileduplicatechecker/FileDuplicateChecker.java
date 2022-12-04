@@ -39,11 +39,20 @@ public class FileDuplicateChecker {
         System.out.println("Fetching files...");
         scrape(selectedDirectory);
         Collections.sort(fetchedFiles, Collections.reverseOrder());
-        System.out.println("Completed\n\nScanning files for duplicates...");
+        System.out.println("Completed\nScanning files for duplicates...");
         compareFiles();
         System.out.println("Found " + duplicateFiles.size() + " duplicate files");
+        System.out.println("Removing duplicate files...");
+        removeDuplicates();
         System.out.println("\nFinished");
         
+    }
+    
+    private static void removeDuplicates() {
+        for (File file : duplicateFiles) {
+            System.out.printf("\tDeleting duplicate file '%s'",
+                    file.getName());
+        }
     }
     
     // Function to check for duplicates
@@ -51,23 +60,27 @@ public class FileDuplicateChecker {
         for (File controlFile : fetchedFiles) {
             for (File testFile : fetchedFiles) {
                 try {
-                    int check = Arrays.compare(
-                            Files.readAllBytes(controlFile.toPath()), 
-                            Files.readAllBytes(testFile.toPath())
-                        );
-                    // Ensures the program doesn't remove the original file!!
-                    if (check == 0 && !controlFile.equals(testFile)) {
+                    long check = Files.mismatch(controlFile.toPath(), testFile.toPath());
+                    
+                    //int check = Arrays.compare(
+                    //        Files.readAllBytes(controlFile.toPath()),
+                    //        Files.readAllBytes(testFile.toPath())
+                    //);
+                    
+                    //System.out.printf("Comparing files %s and %s\n", 
+                    //        controlFile.getName(), testFile.getName());
+                    
+                    // Ensures the program does NOT remove the original file!!
+                    if (check == -1L && !controlFile.equals(testFile)) {
+                        System.out.printf("Duplicate files detected:\n\t%s\n\t%s\n",
+                                controlFile.getAbsolutePath(),
+                                testFile.getAbsolutePath());
                         duplicateFiles.add(testFile);
-                        // System.out.println(
-                        //        "\tDeleting duplicate file '"
-                        //                +testFile.getName()
-                        //                +"'");
-                        // testFile.delete();
                     }
-                } catch (IOException e) {
-                    //System.err.println(e);
+                } catch (Exception e) {
+                    System.err.println(e);
                 }
-            }   
+            }
         } 
     }
     

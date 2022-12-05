@@ -24,7 +24,7 @@ public class FileDuplicateChecker {
         
         Scanner in = new Scanner(System.in);
         
-        System.out.println("=====File Duplicate Checker v0.01=====");
+        System.out.println("=====File Duplicate Checker v1.0=====");
         
         do {    
             System.out.print(

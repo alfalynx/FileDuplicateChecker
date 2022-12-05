@@ -16,9 +16,9 @@ import java.util.Scanner;
 public class FileDuplicateChecker {
     
     static File selectedDirectory;
+    static int duplicateCounter = 0;
     
     static ArrayList<File> fetchedFiles = new ArrayList<>();
-    static ArrayList<File> duplicateFiles = new ArrayList<>();
     
     public static void main(String[] args) throws IOException {
         
@@ -40,21 +40,51 @@ public class FileDuplicateChecker {
         Collections.sort(fetchedFiles, Collections.reverseOrder());
         System.out.println("Completed\nScanning files for duplicates...");
         compareFiles();
-        System.out.println("Found " + duplicateFiles.size() + " duplicate files");
-        System.out.println("Removing duplicate files...");
-        removeDuplicates();
+        System.out.printf("Removed %d duplicate files\n", duplicateCounter);
+        moveToMain();
+        System.out.println("Cleaning up left over sub-directories");
+        removeSubDirectories(selectedDirectory);
         System.out.println("\nFinished");
-        
     }
     
-    private static void removeDuplicates() {
-        for (File file : duplicateFiles) {
-            System.out.printf("\tDeleting duplicate file '%s'",
-                    file.getName());
+    
+    // Ensures every file is placed into selectedDirectory
+    private static void moveToMain() {
+        fetchedFiles.clear();
+        scrape(selectedDirectory);
+        for (File f : fetchedFiles) {
+            f.renameTo(new File(String.format("%s/%s", 
+                            selectedDirectory.getAbsolutePath(), f.getName())
+            ));
         }
     }
     
-    // Function to check for duplicates
+
+    private static void removeDuplicate(File file) {
+        try {
+            System.out.printf("\tDeleting duplicate file '%s'\n",
+                    file.getName());
+            file.delete();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+    }
+    
+    // Removes any left over sub-directories after moveToMain() is called
+    private static void removeSubDirectories(File folder) {
+        if (folder.isDirectory()) {
+            for (File d : folder.listFiles()) {
+                if (d.isDirectory()) {
+                    d.delete();
+                }
+            }
+        } else {
+            System.err.println("Entered value is not a folder!");
+        }
+    }
+    
+    
+    // Compares files to eachother to scan for duplicates
     private static void compareFiles() throws IOException {
         for (File controlFile : fetchedFiles) {
             for (File testFile : fetchedFiles) {
@@ -63,22 +93,21 @@ public class FileDuplicateChecker {
                     
                     // Ensures the program does NOT remove the original file!!
                     if (check == -1L && !controlFile.equals(testFile)) {
-                        System.out.printf("Duplicate files detected:\n\t%s\n\t%s\n",
-                                controlFile.getAbsolutePath(),
-                                testFile.getAbsolutePath());
-                        duplicateFiles.add(testFile);
+                        removeDuplicate(testFile);
+                        duplicateCounter++;
                     }
-                } catch (IOException e) {
+                } catch (java.nio.file.NoSuchFileException e) {
+                } catch(IOException e) {
                     System.err.println(e);
                 }
             }
         } 
     }
     
-    // Function to obtain files from folder and all sub-folders, is recursive
-    private static void scrape(File folder) {
-        if (folder.isDirectory()) {
-            for (File f : folder.listFiles()) {
+    // Obtains files from directory and all sub-directories, is recursive
+    private static void scrape(File dir) {
+        if (dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
                 if (f.isFile()) {
                     fetchedFiles.add(f);
                 } else if (f.isDirectory()) {

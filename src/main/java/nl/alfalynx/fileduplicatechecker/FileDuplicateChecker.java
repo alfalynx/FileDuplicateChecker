@@ -71,10 +71,14 @@ public class FileDuplicateChecker {
     }
     
     // Removes any left over sub-directories after moveToMain() is called
-    private static void removeSubDirectories(File folder) {
-        if (folder.isDirectory()) {
-            for (File d : folder.listFiles()) {
+    private static void removeSubDirectories(File directory) {
+        if (directory.isDirectory()) {
+            for (File d : directory.listFiles()) {
                 if (d.isDirectory()) {
+                    while (d.listFiles() != null) {
+                        removeSubDirectories(d);
+                        d.delete();
+                    }
                     d.delete();
                 }
             }
@@ -105,9 +109,9 @@ public class FileDuplicateChecker {
     }
     
     // Obtains files from directory and all sub-directories, is recursive
-    private static void scrape(File dir) {
-        if (dir.isDirectory()) {
-            for (File f : dir.listFiles()) {
+    private static void scrape(File directory) {
+        if (directory.isDirectory()) {
+            for (File f : directory.listFiles()) {
                 if (f.isFile()) {
                     fetchedFiles.add(f);
                 } else if (f.isDirectory()) {
